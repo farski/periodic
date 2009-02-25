@@ -1,5 +1,5 @@
 module Periodic
-	extend self
+	# extend self
 	
 	def parse(string, options = {})
 		return nil if !string.match(/\d/)
