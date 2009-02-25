@@ -8,7 +8,7 @@ module Periodic
 		return (options[:seconds] == :partial && !seconds.is_a?(Float)) ? seconds.to_f : seconds
 	end
 	
-	def output(seconds, format, precision = :round)
+	def output(seconds, format = '%y:%n:%w:%d:%h:%m:%s', precision = :round)
 		return nil unless (seconds.is_a?(Integer) || seconds.is_a?(Float)) && format.match(/%/)
 		precision = (precision == :exact ? 'to_f' : 'to_i')
 		
@@ -75,3 +75,4 @@ private
 		string.gsub!(/!*/, '')
 	end
 end
+puts Periodic.output(120)

@@ -107,6 +107,10 @@ class PeriodicTest < Test::Unit::TestCase
 			assert_equal "1234", Periodic.output(1234, "%s")
 		end
 		
+		should "simplify the default format as much as possible" do
+			assert_equal "1", Periodic.output(1)
+		end
+		
 		should "print simple 'conversions'" do
 			assert_equal "1", Periodic.output((60*60), "%h")
 			assert_equal "1", Periodic.output((60*60*24), "%d")
