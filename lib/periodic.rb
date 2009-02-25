@@ -75,4 +75,3 @@ private
 		string.gsub!(/!*/, '')
 	end
 end
-puts Periodic.output(120)
