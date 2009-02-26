@@ -18,6 +18,7 @@ module Periodic
 		
 		units = matchers.inject(Array.new) { |cache, m| cache << (format.match(m) ? names[matchers.index(m)] : nil) }.compact
 		units.reverse.each_with_index do |u, i|
+			precision = ((seconds % 1) != 0 ? 'to_f' : precision )
 			factor = eval(factors[0,names.index(u)+1].join("*"))
 			value = (seconds.send(units[i+1] ? 'to_i' : precision) / factor)
 			seconds -= (value*factor)
@@ -75,3 +76,5 @@ private
 		string.gsub!(/!*/, '')
 	end
 end
+
+puts Periodic.parse('8.44s', :bias => :minutes)

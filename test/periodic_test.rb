@@ -116,6 +116,7 @@ class PeriodicTest < Test::Unit::TestCase
 		
 		should "simplify the default format as much as possible" do
 			assert_equal "1", Periodic.output(1)
+			assert_equal "1.1", Periodic.output(1.1)
 		end
 		
 		should "print simple 'conversions'" do
