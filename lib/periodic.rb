@@ -1,3 +1,5 @@
+require 'bigdecimal'
+
 module Periodic
 	extend self
 	
@@ -21,7 +23,7 @@ module Periodic
 			precision = ((seconds % 1) != 0 ? 'to_f' : precision )
 			factor = eval(factors[0,names.index(u)+1].join("*"))
 			value = (seconds.send(units[i+1] ? 'to_i' : precision) / factor)
-			seconds -= (value*factor)
+			seconds = BigDecimal("#{seconds}") - BigDecimal("#{(value*factor)}")
 			value = ((format.match(/:/) && value.to_s.length == 1) ? ("0" + value.to_s) : value.to_s) 
 			format.gsub!(matchers[names.index(u)], value)
 		end
@@ -76,5 +78,3 @@ private
 		string.gsub!(/!*/, '')
 	end
 end
-
-puts Periodic.parse('8.44s', :bias => :minutes)

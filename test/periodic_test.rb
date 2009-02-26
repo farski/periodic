@@ -148,5 +148,10 @@ class PeriodicTest < Test::Unit::TestCase
 			assert_equal "120", Periodic.output(Periodic.parse(Periodic.output(120, '%s')), '%s')
 			assert_equal "24:00:01", Periodic.output(Periodic.parse(Periodic.output(86401, '%h:%m:%s')), '%h:%m:%s')
 		end
+		
+		should "not have roudning errors in this particular case" do
+			assert_equal '1 hours 7 minutes 45 seconds', Periodic.output(Periodic.parse('67min 45sec', :bias => :minutes), '%h hours %m minutes %s seconds')
+			assert_equal '30 minutes 1.1 seconds', Periodic.output(Periodic.parse('30min 1.1sec', :bias => :minutes), '%h hours %m minutes %s seconds')
+		end
 	end
 end
