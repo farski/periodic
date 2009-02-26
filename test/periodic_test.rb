@@ -36,6 +36,11 @@ class PeriodicTest < Test::Unit::TestCase
 			assert_equal((3600*24*365.25*100), Periodic.parse('1', :bias => :centuries))
 		end
 		
+		should "correctly parse labeled numbers that are below the bias" do
+			assert_equal 1, Periodic.parse('1s', :bias => :minutes)
+			assert_equal 60, Periodic.parse('1minute', :bias => :hours)
+		end
+		
 		context "with text labels" do
 			context "with a single unit" do
 				should "parse seconds with a variety of labels" do
@@ -92,7 +97,7 @@ class PeriodicTest < Test::Unit::TestCase
 			end
 			
 			should "parse with a bias but also correct any impossibilities" do
-				assert_equal 90, Periodic.parse('1:30', :bias => :seconds) # will correct to :bias => minute
+				assert_equal 90, Periodic.parse('1:30', :bias => :seconds) # will correct to :bias => minutes
 			end
 		end
 	end
@@ -105,6 +110,8 @@ class PeriodicTest < Test::Unit::TestCase
 		
 		should "return the exact number of seconds input" do
 			assert_equal "1234", Periodic.output(1234, "%s")
+			assert_equal "1234.1", Periodic.output(1234.1, "%s", :exact) # this should really work w/o explicit :exact
+			assert_equal "57:00", Periodic.output(3420.0)
 		end
 		
 		should "simplify the default format as much as possible" do

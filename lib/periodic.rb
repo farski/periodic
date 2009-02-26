@@ -32,8 +32,8 @@ private
 	def delimit(string, options)
 		units = [:seconds, :minutes, :hours, :days, :weeks, :months, :years, :decades, :centuries, :millennia]
 		abbrs = %w{s m h d w n y a c b}
-		if string.match(/[a-zA-Z]/)
-			string.concat("sec") if string[-1,1].match(/\d/)			
+		if !string.match(/:/)
+			string.concat(options[:bias].to_s) if string[-1,1].match(/\d/)
 			parts = normalize_text(string).split(' ').sort{|x,y| abbrs.index(y[-1,1]) <=> abbrs.index(x[-1,1]) }				
 			string = ""
 			parts.each_with_index do |s, i|
@@ -45,11 +45,11 @@ private
 				end
 			end
 			string.chop!
+			options[:bias] = units[string.scan(/:/).size] if string.scan(/:/).size < units.index(options[:bias])
 		end
-		minimum_bias = string.match(/:/) ? string.scan(/:/).size : 0			
-		options[:bias] = units[minimum_bias] if units.index(options[:bias]) < minimum_bias
-		units.reverse.index(options[:bias]).times{ string.insert(0, '00:') }			
-		(units.index(options[:bias])-minimum_bias).times{ string.concat(':00') }
+		options[:bias] = units[string.scan(/:/).size] if string.scan(/:/).size > units.index(options[:bias])
+		(units.reverse.index(options[:bias])).times{ string.insert(0, '00:') }
+		(units.index(options[:bias])-string.scan(/:/).size).times{ string.concat(':00') }
 		return string
 	end
 	
