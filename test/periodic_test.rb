@@ -110,8 +110,64 @@ class PeriodicTest < Test::Unit::TestCase
 		
 		should "return the exact number of seconds input" do
 			assert_equal "1234", Periodic.output(1234, "%s")
-			assert_equal "1234.1", Periodic.output(1234.1, "%s", :exact) # this should really work w/o explicit :exact
-			assert_equal "57:00", Periodic.output(3420.0)
+			assert_equal "1234.1", Periodic.output(1234.1, "%s")
+			assert_equal "57:00", Periodic.output(3420)
+			assert_equal "2:01", Periodic.output(121)
+		end
+		
+		context "with precision" do
+			should "return expected values with default precision" do
+				assert_equal "60", Periodic.output(60, '%s')
+				assert_equal "60.0", Periodic.output(60.0, '%s')
+				assert_equal "60.1", Periodic.output(60.1, '%s')
+				assert_equal "60.01", Periodic.output(60.01, '%s')
+				
+				assert_equal "1", Periodic.output(60, '%m')
+				assert_equal "1.0", Periodic.output(60.0, '%m')
+				assert_equal((60.1/60).to_s, Periodic.output(60.1, '%m'))
+				assert_equal((60.01/60).to_s, Periodic.output(60.01, '%m'))
+				
+				assert_equal "1", Periodic.output(60, '%m %s')
+				assert_equal "1.0", Periodic.output(60.0, '%m %s')
+				assert_equal "1 0.1", Periodic.output(60.1, '%m %s')
+				assert_equal "1 0.01", Periodic.output(60.01, '%m %s')
+				
+				assert_equal "1.5", Periodic.output(90, '%m')
+				assert_equal "1.5", Periodic.output(90.0, '%m')
+				assert_equal((90.1/60).to_s, Periodic.output(90.1, '%m'))
+				assert_equal "1 30.1", Periodic.output(90.1, '%m %s')
+			end
+			
+			should "return expected values with arbitrary precisions" do
+				assert_equal "60", Periodic.output(60, '%s', :precision => 0)
+				assert_equal "60.0", Periodic.output(60, '%s', :precision => 1)
+				assert_equal "60.0", Periodic.output(60, '%s', :precision => 2)
+				
+				assert_equal "60", Periodic.output(60.1, '%s', :precision => 0)
+				assert_equal "60.1", Periodic.output(60.1, '%s', :precision => 1)
+				assert_equal "60.1", Periodic.output(60.1, '%s', :precision => 2)
+				
+				assert_equal "1", Periodic.output(60.0, '%m', :precision => 0)
+				assert_equal "1.0", Periodic.output(60.0, '%m', :precision => 1)
+				assert_equal "1.0", Periodic.output(60.0, '%m', :precision => 2)
+				
+				assert_equal "1", Periodic.output(60.1, '%m %s', :precision => 0)
+				assert_equal "1 1", Periodic.output(60.7, '%m %s', :precision => 0)
+				
+				assert_equal "1 0.1", Periodic.output(60.1, '%m %s', :precision => 1)
+				assert_equal "1 0.7", Periodic.output(60.7, '%m %s', :precision => 1)
+				assert_equal "1 0.1", Periodic.output(60.1, '%m %s', :precision => 2)
+				assert_equal "1 0.7", Periodic.output(60.7, '%m %s', :precision => 2)
+			end
+
+			should "print correctly when input has long repeating decimals" do
+				assert_equal((2.0/3.0).to_s, Periodic.output(2.0/3.0, "%s"))
+				assert_equal("1", Periodic.output(2.0/3.0, "%s", :precision => 0))
+				assert_equal("0.7", Periodic.output(2.0/3.0, "%s", :precision => 1))
+				assert_equal("0.67", Periodic.output(2.0/3.0, "%s", :precision => 2))				
+				
+				# assert_equal "2760.18181818182", Periodic.output(30362.0/11, "%s")
+			end
 		end
 		
 		should "simplify the default format as much as possible" do
@@ -149,7 +205,7 @@ class PeriodicTest < Test::Unit::TestCase
 			assert_equal "24:00:01", Periodic.output(Periodic.parse(Periodic.output(86401, '%h:%m:%s')), '%h:%m:%s')
 		end
 		
-		should "not have roudning errors in this particular case" do
+		should "not have rounding errors in this particular case" do
 			assert_equal '1 hours 7 minutes 45 seconds', Periodic.output(Periodic.parse('67min 45sec', :bias => :minutes), '%h hours %m minutes %s seconds')
 			assert_equal '30 minutes 1.1 seconds', Periodic.output(Periodic.parse('30min 1.1sec', :bias => :minutes), '%h hours %m minutes %s seconds')
 		end
