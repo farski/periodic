@@ -10,7 +10,7 @@ module Periodic
 		return (options[:seconds] == :partial && !seconds.is_a?(Float)) ? seconds.to_f : seconds
 	end
 	
-	def output(seconds, format_or_options = '%y:%n:%w:%d:%h:%m:%s', options = { :precision => nil })
+	def print(seconds, format_or_options = '%y:%n:%w:%d:%h:%m:%s', options = { :precision => nil })
 		case format_or_options
 			when String then format = format_or_options
 			when Hash then format, options = (options[:format] ? options[:format] : '%y:%n:%w:%d:%h:%m:%s'), format_or_options
@@ -19,7 +19,7 @@ module Periodic
 		return nil unless ((seconds.is_a?(Integer) || seconds.is_a?(Float)) && format.match(/%/))		
 		
 		names = %w{ seconds minutes hours days weeks months years }
-		factors = [1, 60, 60, 24, 7, 30, 365]
+		factors = [1, 60, 60, 24, 7, 4, 52]
 		directives = [/%s/, /%m/, /%h/, /%d/, /%w/, /%n/, /%y/]
 		unused_seconds = seconds
 
@@ -63,16 +63,25 @@ private
 			options[:bias] = units[string.scan(/:/).size] if string.scan(/:/).size < units.index(options[:bias])
 		end
 		options[:bias] = units[string.scan(/:/).size] if string.scan(/:/).size > units.index(options[:bias])
-		(units.reverse.index(options[:bias])).times{ string.insert(0, '00:') }
-		(units.index(options[:bias])-string.scan(/:/).size).times{ string.concat(':00') }
+		((units.reverse.index(options[:bias]))||0).times{ string.insert(0, '00:') }
+		((units.index(options[:bias])||0)-string.scan(/:/).size).times{ string.concat(':00') }
 		return string
 	end
 	
 	def normalize_text(string)
+		# strip any spaces or separators from the string
 		[/(and |,)/, /( )/].each{ |m| string.gsub!(m, '') }
+		
+		# insert a space after each number-unit pair
 		string.gsub!(/(\d)([a-zA-Z]+)/, '\1\2 ')
-		{:s=>/(s\w*)/,:n=>/(mo\w*)/,:b=>/(m\w*l\w*)/,:m=>/(m\w*)/,:h=>/(h\w*)/,:a=>/(d\w*c\w*)/,:d=>/(d\w*)/,:w=>/(w\w*)/,:y=>/(y\w*)/,:c=>/(c\w*)/}.each{ |k,v| string.gsub!(v, k.to_s) }
-		string
+		
+		# replace unit labels with standardized abbriviations
+		# the array is to make sure certain replacements happen first
+		[{:n=>/(mo\w*)/,:b=>/(m\w*l\w*)/,:a=>/(d\w*c\w*)/}, {:n=>/(mo\w*)/,:b=>/(m\w*l\w*)/,:m=>/(m\w*)/,:h=>/(h\w*)/,:a=>/(d\w*c\w*)/,:d=>/(d\w*)/,:w=>/(w\w*)/,:y=>/(y\w*)/,:c=>/(c\w*)/}, {:s=>/(s\w*)/}].each do |set|
+			set.each{ |k,v| string.gsub!(v, k.to_s) }
+		end
+		
+		return string
 	end
 		
 	def round_with_precision(number, precision = nil)
