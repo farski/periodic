@@ -1,6 +1,6 @@
 require 'bigdecimal'
 
-module Periodic
+module Periodic	
 	module Duration
 		module Units
 			TIME = Hash.new
@@ -23,9 +23,12 @@ module Periodic
 				string.gsub!(/:(\d):/, ':0\1:')
 				string.gsub!(/:(\d):/, ':0\1:') # needs to happen twice??
 				string.gsub!(/:(\d(.\d)*)$/, ':0\1')
+			
+				# remove leading zero-value digitals
+				string.sub!(/[0:]*/, '')
 			else
 				# if the string starts with a number we can assume the value-label pairs are like '10 minutes'
-				if string[0,1].match(/\d/)
+				if string[0,1].match(/\d/) || string[0,1] == "!"
 					string = string.split(/(!?\d[.\d]*[-_:, a-zA-Z]+)/).delete_if{|x| x == ""}.inject(String.new) { |memo, s| memo << ((s.match(/!/) || s.match(/[1-9]/)) ? s : "")  }
 
 				# if starts with a letter we can assume the value-label pairs are like 'minutes: 10'
@@ -37,12 +40,12 @@ module Periodic
 				# remove leading zero-value digitals
 				string.sub!(/[0:]*/, '')
 			end
-			string.gsub(/!/, '')
+			string.strip.gsub(/!/, '')
 		end
 		
 		class Duration
 			def initialize(seconds)
-				@seconds = seconds
+				@seconds = (seconds.is_a?(Float) ? seconds.to_f : seconds)
 			end
 			
 			def format(format = '%y:%d:%h:%m:%s', precision = nil)
@@ -62,7 +65,7 @@ module Periodic
 				end
 				
 				values[smallest_unit_directive] = case precision
-					when nil then (values[smallest_unit_directive] % 1 == 0) ? values[smallest_unit_directive].to_i : values[smallest_unit_directive]
+					when nil then (values[smallest_unit_directive] % 1 == 0) && !@seconds.is_a?(Float) ? values[smallest_unit_directive].to_i : values[smallest_unit_directive]
 					when 0 then values[smallest_unit_directive].to_i
 					else (values[smallest_unit_directive] * (10 ** precision)).round / (10 ** precision).to_f
 				end
@@ -78,3 +81,5 @@ module Periodic
 		end
 	end
 end
+
+puts Periodic::Duration::Duration.new(60).format('!%y years %d days %h hours %m minutes %s seconds')
