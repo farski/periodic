@@ -66,6 +66,10 @@ class ParserTest < Test::Unit::TestCase
 					assert_equal 3661.1, Periodic.parse('1 hour, 1 minute and 1.1 seconds')
 				end
 				
+				should "handle multiple instances of the same unit" do
+					assert_equal 120, Periodic.parse('1 minute 1 minute')
+				end
+				
 				should "work with non-consecutive units" do
 					assert_equal 3601, Periodic.parse('1 hour, 1 second')
 				end

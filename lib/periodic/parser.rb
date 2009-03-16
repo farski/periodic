@@ -46,7 +46,7 @@ module Periodic
 			def extract_time_parts_from_text
 				normalize_string
 				units = { :s => :seconds, :m => :minutes, :h => :hours, :d => :days, :w => :weeks, :n => :months, :y => :years, :a => :decades, :c => :centuries, :b => :millennia }
-				@string.split(' ').each { |part| @time_parts[part.match(/([a-z])/) ? units[part.match(/([a-z])/)[1].to_sym] : @bias] = part.to_f }
+				@string.split(' ').each { |part| @time_parts[part.match(/([a-z])/) ? units[part.match(/([a-z])/)[1].to_sym] : @bias] = (@time_parts[part.match(/([a-z])/) ? units[part.match(/([a-z])/)[1].to_sym] : @bias]||0) + part.to_f }
 			end
 			
 			def normalize_string
