@@ -81,5 +81,3 @@ module Periodic
 		end
 	end
 end
-
-puts Periodic::Duration::Duration.new(60).format('!%y years %d days %h hours %m minutes %s seconds')
